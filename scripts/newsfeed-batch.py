@@ -3,11 +3,17 @@
 from facebook_scraper import *
 import sqlalchemy as db
 
+from datetime import datetime
+
+# log date/time of batch run
+now = datetime.now()
+print(now.strftime("%d/%m/%Y %H:%M:%S"))
+
 # DB config
 URL = 'localhost'
 DB = 'gocurry'
 USR = 'user'
-PWD = 'password'
+PWD = 'password123'
 
 SQLALCHEMY_DATABASE_URI = 'mysql://{}:{}@{}:3306/{}?charset=utf8mb4'.format(
     USR, PWD, URL, DB)
@@ -29,16 +35,23 @@ for page in pages_list:
         else:
             isGoCurryPage = 0
 
-        query = "INSERT IGNORE INTO  `news_feed` (`post_id`, `post_text`, `post_url`, `username`, `time`, `is_gocurry_page`, `source`, `likes`) VALUES(%s,%s,%s,%s,%s,%s,%s,%s)"
+        query = "INSERT IGNORE INTO `newsfeed` (`id`, `source`, `username`, `body`, `url`, `image`, `images`, `external_link`, `likes`, `shares`, `video`, `video_thumbnail`, `is_live`, `is_gocurry_page`, `time`) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
 
         data = (
             post['post_id'],
-            str(post['post_text']),
-            post['post_url'],
-            str(post['username']),
-            post['time'],
-            isGoCurryPage,
             'facebook',
-            post['likes']
+            str(post['username']),
+            str(post['post_text']),
+            str(post['post_url']),
+            str(post['image']),
+            str(post['images']),
+            str(post['link']),
+            post['likes'],
+            post['shares'],
+            str(post['video']),
+            str(post['video_thumbnail']),
+            post['is_live'],
+            isGoCurryPage,
+            post['time']            
         )
         ResultProxy = connection.execute(query, data)
