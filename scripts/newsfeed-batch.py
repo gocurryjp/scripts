@@ -12,8 +12,8 @@ print(now.strftime("%d/%m/%Y %H:%M:%S"))
 # DB config
 URL = 'localhost'
 DB = 'gocurry'
-USR = 'user'
-PWD = 'password123'
+USR = 'root'
+PWD = 'password'
 
 SQLALCHEMY_DATABASE_URI = 'mysql://{}:{}@{}:3306/{}?charset=utf8mb4'.format(
     USR, PWD, URL, DB)
@@ -28,14 +28,21 @@ pages_list = [
     'NirvanamTokyo'
 ]
 
+# delete existing scraped content to get rid of expired CDN links
+query = "TRUNCATE TABLE `newsfeed`"
+
+ResultProxy = connection.execute(query)
+
+# scrape pages 1-5 again and populate the table
 for page in pages_list:
-    for post in get_posts(page, pages=1, cookies="/root/gocurry/cookies.txt"):
+    for post in get_posts(page, pages=5, cookies="cookies.txt"):
+        
         if(page == 'gocurryjp'):
             isGoCurryPage = 1
         else:
             isGoCurryPage = 0
 
-        query = "INSERT IGNORE INTO `newsfeed` (`id`, `source`, `username`, `body`, `url`, `image`, `images`, `external_link`, `likes`, `shares`, `video`, `video_thumbnail`, `is_live`, `is_gocurry_page`, `time`) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+        query = "INSERT INTO `newsfeed` (`id`, `source`, `username`, `body`, `url`, `image`, `images`, `external_link`, `likes`, `shares`, `video`, `video_thumbnail`, `is_live`, `is_gocurry_page`, `time`) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
 
         data = (
             post['post_id'],
@@ -54,4 +61,5 @@ for page in pages_list:
             isGoCurryPage,
             post['time']            
         )
+
         ResultProxy = connection.execute(query, data)
